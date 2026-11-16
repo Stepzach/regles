@@ -1,6 +1,21 @@
-const SETTINGS_KEY = "cycle-compass-settings";
-const CHECKINS_KEY = "cycle-compass-checkins";
-const PLANS_KEY = "cycle-compass-plans";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+import { collection, doc, getDoc, getFirestore, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDZY2xeIsMyQjbQjds4A1d8ke2a6OU6qsk",
+  authDomain: "regles-a5a75.firebaseapp.com",
+  projectId: "regles-a5a75",
+  storageBucket: "regles-a5a75.firebasestorage.app",
+  messagingSenderId: "97241333829",
+  appId: "1:97241333829:web:5551a7cb293a326a8f632c",
+  measurementId: "G-VT4XEBKPCR"
+};
+
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
 
 const PHASE_ORDER = ["menstrual", "follicular", "ovulatory", "luteal"];
 
@@ -20,18 +35,21 @@ const PHASES = {
       meals: [
         {
           title: "Lemony lentil soup",
+          image: "https://boons-marketplace-restaurant-web-images.s3.us-east-2.amazonaws.com/uploads/menu/6a38d00fa2cbf.jpg",
           tags: "warm · iron + vitamin C",
           ingredients: "Red lentils, tinned tomatoes, spinach, onion, lemon, olive oil and bread.",
           method: "Soften the onion, add lentils and tomatoes with water or stock, simmer until soft, then fold in spinach and lemon."
         },
         {
           title: "Salmon or tofu rice bowl",
+          image: "https://cdn.thefork.com/tf-lab/image/upload/w_3840%2Cc_fill%2Cq_auto%2Cf_auto/restaurant/7e7ed418-b921-4c84-8f8b-7d628197b31b/772fc37c-7f54-43fa-bd6e-0b433405144a.jpg",
           tags: "balanced · easy",
           ingredients: "Salmon or tofu, rice, broccoli, avocado, cucumber and lemon or lime.",
           method: "Cook the rice and protein, steam the broccoli, then build the bowl with avocado and citrus."
         },
         {
           title: "Porridge with berries and seeds",
+          image: "https://www.santamariaworld.com/optimized/recipe-large/globalassets/estonia/erik-orgu-soovitab/rsz_kohev-kaerahelbepuder-munaga.jpg",
           tags: "warm · quick",
           ingredients: "Oats, milk or fortified plant milk, yoghurt, berries and pumpkin seeds.",
           method: "Cook the oats with milk, then add yoghurt, berries and seeds."
@@ -68,18 +86,21 @@ const PHASES = {
       meals: [
         {
           title: "Overnight oats with apple",
+          image: "https://cdn-next.cybassets.com/s/files/5770/ckeditor/pictures/content_6971e5ed-e8f6-4ff9-90d7-c2f2bfea193a.png",
           tags: "make ahead · vegetarian",
           ingredients: "Oats, yoghurt or fortified soy yoghurt, milk, grated apple, cinnamon and walnuts.",
           method: "Mix everything except the walnuts in a jar the night before. Add walnuts just before eating."
         },
         {
           title: "Crisp chickpea quinoa salad",
+          image: "https://images.themodernproper.com/production/posts/QuinoaSalad_10.jpg?dm=1739652539&fit=crop&fm=jpg&h=960&q=82&s=df6176bb2d1ee73bdc822c87327e9db&w=960",
           tags: "fresh · vegetarian",
           ingredients: "Quinoa, chickpeas, cucumber, tomatoes, herbs, feta or tofu, lemon and olive oil.",
           method: "Cook the quinoa, then toss everything together with lemon and olive oil."
         },
         {
           title: "Ginger tofu or chicken stir-fry",
+          image: "https://platefullyjoy.com/assets/images/1766435561144-cxc8evj8.webp",
           tags: "quick · high protein",
           ingredients: "Tofu or chicken, noodles or rice, broccoli, peppers, ginger, soy sauce and sesame seeds.",
           method: "Stir-fry the protein and vegetables, then add cooked noodles or rice and sauce."
@@ -116,18 +137,21 @@ const PHASES = {
       meals: [
         {
           title: "Herby couscous bowl",
+          image: "https://eatpace.com/_next/image?q=75&url=https%3A%2F%2Fspykbkfbbhrhgdhgboap.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Frecipe-images%2Fharissa-chickpeas-couscous-1775640718832.jpg&w=1920",
           tags: "fast · fresh",
           ingredients: "Couscous, chickpeas or eggs, cucumber, tomatoes, herbs, lemon, olive oil, feta or tahini.",
           method: "Cover the couscous with hot water, fluff it, then toss with the remaining ingredients."
         },
         {
           title: "Pesto pea pasta",
+          image: "https://recipesbyleticia.com/assets/images/1771196764009-qmnx00k4.webp",
           tags: "comforting · 15 minutes",
           ingredients: "Pasta, peas, pesto, spinach, parmesan or nutritional yeast and lemon.",
           method: "Cook the pasta and peas together, then stir through pesto, spinach and lemon."
         },
         {
           title: "Yoghurt, fruit and granola bowl",
+          image: "https://d1w7312wesee68.cloudfront.net/lUIz3vEIxSUW2MUD123-R9eJhqu9SGFtWdGz3Y_m2J8/resize%3Afit%3A720%3A720/plain/s3%3A/toasttab/menu_service/restaurants/b440411e-7d09-468f-a0d1-4ff094487050/MenuItem/2b0b101b-ab6f-4269-862d-6c0da86b4945.jpg",
           tags: "no-cook · quick",
           ingredients: "Greek or soy yoghurt, fruit, oats or granola, and nuts or seeds.",
           method: "Build it in a bowl. Take it with you if the day is full."
@@ -164,18 +188,21 @@ const PHASES = {
       meals: [
         {
           title: "Sweet potato and black bean chilli",
+          image: "https://justcookeasy.com/uploads/recepten/recept_1778918459.webp",
           tags: "warm · vegetarian · batch-friendly",
           ingredients: "Sweet potato, black beans, tomatoes, onion, peppers, cumin, rice or tortilla chips.",
           method: "Cook the onion and peppers, add cubed sweet potato, beans, tomatoes and spices, then simmer until soft."
         },
         {
           title: "Peanut noodle bowl",
+          image: "https://eatiku.com.au/cdn/shop/files/PeanutSatayNoodleswithSpicedTofu.jpg?v=1758145720",
           tags: "comforting · quick",
           ingredients: "Noodles, tofu or chicken, broccoli, carrot, peanut butter, soy sauce and lime.",
           method: "Cook noodles and vegetables. Mix peanut butter, soy and lime with warm water, then toss together."
         },
         {
           title: "Baked potato with beans and greens",
+          image: "https://recipecontent.fooby.ch/19061_3-2_1920-1280.jpg",
           tags: "simple · budget-friendly",
           ingredients: "Potato, baked beans, spinach or kale, cheese, yoghurt or tahini.",
           method: "Bake or microwave the potato, warm the beans, wilt the greens and finish with your topping."
@@ -246,9 +273,18 @@ const RESET_STEPS = [
 ];
 
 const state = {
+  user: null,
+  profileName: "",
   settings: null,
   checkin: { energy: "steady", symptoms: [], priority: "lighter-plan" },
-  guidePhase: null
+  guidePhase: null,
+  checkins: [],
+  checkinsReady: false,
+  checkinTouched: false,
+  planHydrated: false,
+  unsubscribeCheckins: null,
+  pendingSetup: null,
+  creatingProfile: false
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -292,44 +328,8 @@ function getDefaultSettings() {
     lastPeriod: toISO(addDays(today(), -4)),
     cycleLength: 28,
     periodLength: 5,
-    wakeTime: "07:30",
-    hemisphere: "north",
-    periodStarts: []
+    wakeTime: "07:30"
   };
-}
-
-function readLocal(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeLocal(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function loadState() {
-  const stored = readLocal(SETTINGS_KEY, null);
-  state.settings = { ...getDefaultSettings(), ...(stored || {}) };
-  state.settings.cycleLength = Number(state.settings.cycleLength);
-  state.settings.periodLength = Number(state.settings.periodLength);
-  state.settings.periodStarts = Array.isArray(state.settings.periodStarts) ? state.settings.periodStarts : [];
-
-  const savedCheckin = readLocal(CHECKINS_KEY, {})[toISO(today())];
-  if (savedCheckin) {
-    state.checkin = {
-      energy: savedCheckin.energy || "steady",
-      symptoms: savedCheckin.symptoms || [],
-      priority: savedCheckin.priority || "lighter-plan"
-    };
-  }
-}
-
-function saveSettings() {
-  writeLocal(SETTINGS_KEY, state.settings);
 }
 
 function getCycle(settings = state.settings, date = today()) {
@@ -363,17 +363,13 @@ function getCycle(settings = state.settings, date = today()) {
 
 function getSeason(date = today()) {
   const month = date.getMonth();
-  const northern = [11, 0, 1].includes(month)
+  return [11, 0, 1].includes(month)
     ? "winter"
     : [2, 3, 4].includes(month)
       ? "spring"
       : [5, 6, 7].includes(month)
         ? "summer"
         : "autumn";
-  if (state.settings.hemisphere === "south") {
-    return { winter: "summer", spring: "autumn", summer: "winter", autumn: "spring" }[northern];
-  }
-  return northern;
 }
 
 function formatTime(time) {
@@ -453,6 +449,9 @@ function renderRecipes(container, meals) {
     const button = fragment.querySelector(".recipe-summary");
     const detail = fragment.querySelector(".recipe-detail");
     fragment.querySelector(".recipe-name").textContent = meal.title;
+    const recipeImage = fragment.querySelector(".recipe-image");
+    recipeImage.src = meal.image || "";
+    recipeImage.alt = meal.image ? `${meal.title} — recipe photograph` : "";
     fragment.querySelector(".recipe-tags").textContent = meal.tags;
     fragment.querySelector(".recipe-ingredients").textContent = meal.ingredients;
     fragment.querySelector(".recipe-method").textContent = meal.method;
@@ -473,6 +472,7 @@ function renderToday() {
   setPalette(phase);
 
   setText("#todayDate", formatDate(today(), { weekday: "long", day: "numeric", month: "long" }));
+  setText("#greeting", getGreeting());
   setText("#cycleDay", `Day ${cycle.cycleDay} of your cycle`);
   setText("#phaseTitle", `${phase.name} phase.`);
   setText("#phaseSummary", phase.summary);
@@ -596,40 +596,35 @@ function renderGuide() {
   plan.append(planList);
   grid.append(food, movement, sleep, plan);
   content.append(grid);
-
-  const recipes = document.createElement("section");
-  recipes.className = "guide-recipes";
-  recipes.innerHTML = "<h3>Three simple meal ideas</h3>";
-  const list = document.createElement("div");
-  list.className = "recipe-list";
-  recipes.append(list);
-  content.append(recipes);
-  renderRecipes(list, phase.food.meals);
 }
 
-function renderPlan() {
-  const season = SEASONS[getSeason()];
-  setText("#seasonTitle", season.title);
-  setText("#seasonLine", season.line);
-  listInto("#seasonSwaps", season.swaps);
-
-  const reset = $("#resetSteps");
-  reset.replaceChildren(...RESET_STEPS.map((step) => {
-    const item = document.createElement("li");
-    item.textContent = step;
-    return item;
-  }));
-
-  const todaysPlan = readLocal(PLANS_KEY, {})[toISO(today())];
-  $("#necessaryTask").value = todaysPlan?.necessary || "";
-  $("#easyTask").value = todaysPlan?.easy || "";
-  $("#careTask").value = todaysPlan?.care || "";
+function renderLog() {
+  const todaysLog = state.checkins.find((entry) => entry.id === toISO(today()));
+  if (todaysLog && !state.planHydrated) {
+    state.checkin = {
+      energy: todaysLog.energy || "steady",
+      symptoms: todaysLog.symptoms || [],
+      priority: todaysLog.priority || "lighter-plan"
+    };
+    const values = {
+      necessaryTask: todaysLog.necessary || "",
+      easyTask: todaysLog.easy || "",
+      careTask: todaysLog.care || ""
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const input = $(`#${id}`);
+      if (input) input.value = value;
+    });
+    const details = $("#miniPlanDetails");
+    if (details) details.open = Boolean(values.necessaryTask || values.easyTask || values.careTask);
+    state.planHydrated = true;
+  }
+  updateChoiceButtons();
   renderHistory();
 }
 
 function renderHistory() {
-  const history = readLocal(CHECKINS_KEY, {});
-  const items = Object.entries(history).sort(([a], [b]) => b.localeCompare(a)).slice(0, 5);
+  const items = state.checkins;
   const target = $("#historyList");
   target.replaceChildren();
   if (!items.length) {
@@ -639,15 +634,41 @@ function renderHistory() {
     target.append(message);
     return;
   }
-  items.forEach(([date, entry]) => {
-    const item = document.createElement("div");
-    item.className = "history-item";
-    const label = document.createElement("strong");
-    label.textContent = formatDate(parseDate(date));
-    const summary = document.createElement("span");
-    const words = [entry.energy === "low" ? "Running low" : entry.energy === "plenty" ? "Plenty" : "Steady", ...(entry.symptoms || []).slice(0, 1)];
-    summary.textContent = words.join(" · ");
-    item.append(label, summary);
+
+  const priorityLabels = {
+    food: "Food",
+    movement: "Movement",
+    "lighter-plan": "A lighter plan",
+    sleep: "Sleep",
+    reset: "A reset"
+  };
+
+  const titleCase = (value) => value ? value.charAt(0).toUpperCase() + value.slice(1) : "—";
+  const addAnswer = (list, labelText, value) => {
+    const label = document.createElement("dt");
+    label.textContent = labelText;
+    const answer = document.createElement("dd");
+    answer.textContent = value;
+    list.append(label, answer);
+  };
+
+  items.forEach((entry) => {
+    const date = entry.id;
+    const item = document.createElement("article");
+    item.className = "history-log";
+    const heading = document.createElement("h3");
+    heading.textContent = formatDate(parseDate(date), { weekday: "short", day: "numeric", month: "short" });
+    const answers = document.createElement("dl");
+    answers.className = "history-answers";
+    addAnswer(answers, "Energy", entry.energy === "low" ? "Running low" : entry.energy === "plenty" ? "Plenty" : "Steady");
+    addAnswer(answers, "Present", entry.symptoms?.length ? entry.symptoms.map(titleCase).join(", ") : "Nothing logged");
+    addAnswer(answers, "Helpful focus", priorityLabels[entry.priority] || "—");
+
+    if (entry.necessary) addAnswer(answers, "Necessary", entry.necessary);
+    if (entry.easy) addAnswer(answers, "Easy win", entry.easy);
+    if (entry.care) addAnswer(answers, "For you", entry.care);
+
+    item.append(heading, answers);
     target.append(item);
   });
 }
@@ -655,7 +676,7 @@ function renderHistory() {
 function renderAll() {
   renderToday();
   renderCycle();
-  renderPlan();
+  renderLog();
 }
 
 function selectTab(tabName) {
@@ -672,56 +693,303 @@ function selectTab(tabName) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function setDialogValues() {
+// Firebase-backed application shell -------------------------------------------------
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  const time = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  return `Good ${time}, ${state.profileName || "there"}!`;
+}
+
+function normaliseSettings(data = {}) {
+  const fallback = getDefaultSettings();
+  return {
+    lastPeriod: data.lastPeriod || fallback.lastPeriod,
+    cycleLength: Math.max(21, Math.min(45, Number(data.cycleLength) || fallback.cycleLength)),
+    periodLength: Math.max(2, Math.min(10, Number(data.periodLength) || fallback.periodLength)),
+    wakeTime: /^([01]\d|2[0-3]):[0-5]\d$/.test(data.wakeTime || "") ? data.wakeTime : fallback.wakeTime
+  };
+}
+
+function getUserRef() {
+  return doc(db, "users", state.user.uid);
+}
+
+function setAuthStatus(message = "") {
+  setText("#authStatus", message);
+}
+
+function showAuth(message = "") {
+  $("#bootScreen").hidden = true;
+  $("#appShell").hidden = true;
+  $("#authScreen").hidden = false;
+  if (message) setAuthStatus(message);
+}
+
+function showApp() {
+  $("#bootScreen").hidden = true;
+  $("#authScreen").hidden = true;
+  $("#appShell").hidden = false;
+  setText("#profileInitial", (state.profileName || "?").trim().charAt(0).toUpperCase() || "?");
+}
+
+function populateOnboarding(setup = {}) {
+  const defaults = normaliseSettings(setup);
+  $("#onboardingName").value = setup.name || state.user?.displayName || "";
+  $("#onboardingLastPeriod").value = defaults.lastPeriod;
+  $("#onboardingLastPeriod").max = toISO(today());
+  $("#onboardingCycleLength").value = defaults.cycleLength;
+  $("#onboardingPeriodLength").value = defaults.periodLength;
+  $("#onboardingWakeTime").value = defaults.wakeTime;
+}
+
+function readOnboarding() {
+  const setup = {
+    name: $("#onboardingName").value.trim(),
+    lastPeriod: $("#onboardingLastPeriod").value,
+    cycleLength: Number($("#onboardingCycleLength").value),
+    periodLength: Number($("#onboardingPeriodLength").value),
+    wakeTime: $("#onboardingWakeTime").value
+  };
+  if (!setup.name || !setup.lastPeriod || parseDate(setup.lastPeriod) > today() ||
+      setup.cycleLength < 21 || setup.cycleLength > 45 ||
+      setup.periodLength < 2 || setup.periodLength > 10 ||
+      setup.periodLength > setup.cycleLength ||
+      !/^([01]\d|2[0-3]):[0-5]\d$/.test(setup.wakeTime)) {
+    return null;
+  }
+  return setup;
+}
+
+function friendlyFirebaseError(error) {
+  if (error?.code === "auth/popup-closed-by-user") return "Google sign-in was closed before it finished.";
+  if (error?.code === "auth/popup-blocked") return "Your browser blocked the sign-in window. Please allow pop-ups and try again.";
+  if (error?.code === "auth/unauthorized-domain") return "This site has not been authorised for Google sign-in yet. Please try again in a moment.";
+  if (error?.code === "permission-denied") return "Your private space is not available yet. Please try again in a moment.";
+  return "Something did not connect. Please try again.";
+}
+
+function setGoogleBusy(isBusy) {
+  const button = $("#googleSignIn");
+  button.disabled = isBusy;
+  button.setAttribute("aria-busy", String(isBusy));
+}
+
+async function createProfile(user, setup) {
+  state.user = user;
+  state.settings = normaliseSettings(setup);
+  state.profileName = setup.name;
+  await setDoc(getUserRef(), {
+    displayName: setup.name,
+    lastPeriod: state.settings.lastPeriod,
+    cycleLength: state.settings.cycleLength,
+    periodLength: state.settings.periodLength,
+    wakeTime: state.settings.wakeTime,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  await updateProfile(user, { displayName: setup.name });
+  state.checkins = [];
+  state.checkinsReady = false;
+  state.checkinTouched = false;
+  state.planHydrated = false;
+  showApp();
+  renderAll();
+  subscribeToCheckins();
+}
+
+async function loadProfile(user) {
+  const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+  if (!profileSnapshot.exists()) return false;
+  const profile = profileSnapshot.data();
+  state.user = user;
+  state.settings = normaliseSettings(profile);
+  state.profileName = profile.displayName || user.displayName || "there";
+  state.checkins = [];
+  state.checkinsReady = false;
+  state.checkinTouched = false;
+  state.planHydrated = false;
+  showApp();
+  renderAll();
+  subscribeToCheckins();
+  return true;
+}
+
+function subscribeToCheckins() {
+  state.unsubscribeCheckins?.();
+  const recentLogs = query(
+    collection(db, "users", state.user.uid, "checkins"),
+    orderBy("savedAt", "desc"),
+    limit(8)
+  );
+  state.unsubscribeCheckins = onSnapshot(recentLogs, (snapshot) => {
+    state.checkins = snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }));
+    if (!state.checkinsReady) {
+      const todayEntry = state.checkins.find((entry) => entry.id === toISO(today()));
+      if (todayEntry && !state.checkinTouched) {
+        state.checkin = {
+          energy: todayEntry.energy || "steady",
+          symptoms: todayEntry.symptoms || [],
+          priority: todayEntry.priority || "lighter-plan"
+        };
+      }
+      state.checkinsReady = true;
+    }
+    renderAll();
+  }, (error) => {
+    setText("#checkInStatus", friendlyFirebaseError(error));
+  });
+}
+
+async function handleAuthState(user) {
+  state.unsubscribeCheckins?.();
+  state.unsubscribeCheckins = null;
+  state.user = user;
+  if (!user) {
+    state.settings = null;
+    state.profileName = "";
+    state.checkins = [];
+    state.checkinsReady = false;
+    state.planHydrated = false;
+    populateOnboarding(state.pendingSetup || {});
+    showAuth();
+    return;
+  }
+
+  if (state.creatingProfile) return;
+
+  try {
+    const loaded = await loadProfile(user);
+    if (!loaded) {
+      populateOnboarding(state.pendingSetup || { name: user.displayName || "" });
+      showAuth("One last thing — save the details that make your estimate useful.");
+    }
+  } catch (error) {
+    populateOnboarding(state.pendingSetup || { name: user.displayName || "" });
+    showAuth(friendlyFirebaseError(error));
+  }
+}
+
+async function saveSettingsToCloud() {
+  await updateDoc(getUserRef(), {
+    lastPeriod: state.settings.lastPeriod,
+    cycleLength: state.settings.cycleLength,
+    periodLength: state.settings.periodLength,
+    wakeTime: state.settings.wakeTime,
+    updatedAt: serverTimestamp()
+  });
+}
+
+function setCycleDialogValues() {
   $("#lastPeriod").value = state.settings.lastPeriod;
   $("#lastPeriod").max = toISO(today());
   $("#cycleLength").value = state.settings.cycleLength;
   $("#periodLength").value = state.settings.periodLength;
   $("#wakeTime").value = state.settings.wakeTime;
-  $("#hemisphere").value = state.settings.hemisphere;
 }
 
-function openSettings() {
-  setDialogValues();
-  $("#settingsDialog").showModal();
-}
-
-function logPeriodStart(dateValue) {
+async function logCurrentPeriod() {
+  const dateValue = toISO(today());
   const selectedDate = parseDate(dateValue);
   const priorDate = parseDate(state.settings.lastPeriod);
   const daysSincePrior = daysBetween(priorDate, selectedDate);
-  let updatedCycleLength = state.settings.cycleLength;
-  let confirmation = "Period logged as day 1.";
+  let cycleLength = state.settings.cycleLength;
+  let note = "Period logged as day 1.";
 
   if (daysSincePrior >= 15 && daysSincePrior <= 60) {
-    updatedCycleLength = daysSincePrior;
-    confirmation = `Period logged as day 1. Your last cycle was ${daysSincePrior} days, so the next estimate now uses ${daysSincePrior}.`;
+    cycleLength = daysSincePrior;
+    note = `Period logged as day 1. Your last cycle was ${daysSincePrior} days, so the next estimate now uses ${daysSincePrior}.`;
   }
 
-  const starts = [...new Set([...state.settings.periodStarts, dateValue])].sort();
-  state.settings = {
-    ...state.settings,
-    lastPeriod: dateValue,
-    cycleLength: updatedCycleLength,
-    periodStarts: starts.slice(-12)
-  };
+  state.settings = { ...state.settings, lastPeriod: dateValue, cycleLength };
   state.guidePhase = "menstrual";
-  saveSettings();
-  setText("#checkInStatus", confirmation);
+  await saveSettingsToCloud();
+  $("#settingsDialog").close();
+  setText("#checkInStatus", note);
   renderAll();
 }
 
-function initialiseListeners() {
+async function saveCheckinToCloud() {
+  const status = $("#checkInStatus");
+  const id = toISO(today());
+  const checkinRef = doc(db, "users", state.user.uid, "checkins", id);
+  const payload = {
+    energy: state.checkin.energy,
+    symptoms: state.checkin.symptoms,
+    priority: state.checkin.priority,
+    phase: getCycle().phaseId,
+    necessary: $("#necessaryTask")?.value.trim() || "",
+    easy: $("#easyTask")?.value.trim() || "",
+    care: $("#careTask")?.value.trim() || ""
+  };
+  status.textContent = "Saving…";
+  try {
+    const existing = await getDoc(checkinRef);
+    if (existing.exists()) {
+      await updateDoc(checkinRef, { ...payload, savedAt: serverTimestamp() });
+    } else {
+      await setDoc(checkinRef, { ...payload, createdAt: serverTimestamp(), savedAt: serverTimestamp() });
+    }
+    state.planHydrated = true;
+    status.textContent = "Saved to your private log.";
+  } catch (error) {
+    status.textContent = friendlyFirebaseError(error);
+  }
+}
+
+async function saveProfileName() {
+  const name = $("#profileName").value.trim();
+  if (!name) return;
+  try {
+    await updateDoc(getUserRef(), { displayName: name, updatedAt: serverTimestamp() });
+    await updateProfile(state.user, { displayName: name });
+    state.profileName = name;
+    $("#profileDialog").close();
+    renderToday();
+    setText("#profileInitial", name.charAt(0).toUpperCase());
+  } catch (error) {
+    setText("#checkInStatus", friendlyFirebaseError(error));
+  }
+}
+
+function initialiseFirebaseListeners() {
   $$(".tab-button").forEach((button) => button.addEventListener("click", () => selectTab(button.dataset.tab)));
   $$('[data-go="cycle"]').forEach((button) => button.addEventListener("click", () => selectTab("cycle")));
-  $$('[data-go="plan"]').forEach((button) => button.addEventListener("click", () => selectTab("plan")));
+  $$('[data-go="log"]').forEach((button) => button.addEventListener("click", () => selectTab("log")));
+
+  $("#onboardingForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const setup = readOnboarding();
+    if (!setup) {
+      setAuthStatus("Please add a name and valid cycle details first.");
+      return;
+    }
+    state.pendingSetup = setup;
+    state.creatingProfile = true;
+    setGoogleBusy(true);
+    setAuthStatus("Connecting your private space…");
+    try {
+      const user = auth.currentUser || (await signInWithPopup(auth, googleProvider)).user;
+      await createProfile(user, setup);
+      setAuthStatus("");
+    } catch (error) {
+      setAuthStatus(friendlyFirebaseError(error));
+    } finally {
+      state.creatingProfile = false;
+      setGoogleBusy(false);
+    }
+  });
 
   $$("#energyChoices button").forEach((button) => button.addEventListener("click", () => {
     state.checkin.energy = button.dataset.energy;
+    state.checkinTouched = true;
+    updateChoiceButtons();
     renderToday();
   }));
   $$("#priorityChoices button").forEach((button) => button.addEventListener("click", () => {
     state.checkin.priority = button.dataset.priority;
+    state.checkinTouched = true;
+    updateChoiceButtons();
     renderToday();
   }));
   $$("#symptomChoices button").forEach((button) => button.addEventListener("click", () => {
@@ -734,87 +1002,73 @@ function initialiseListeners() {
         ? state.checkin.symptoms.filter((item) => item !== symptom)
         : [...state.checkin.symptoms, symptom];
     }
+    state.checkinTouched = true;
+    updateChoiceButtons();
     renderToday();
   }));
 
-  $("#saveCheckIn").addEventListener("click", () => {
-    const history = readLocal(CHECKINS_KEY, {});
-    history[toISO(today())] = {
-      ...state.checkin,
-      phase: getCycle().phaseId,
-      savedAt: new Date().toISOString()
-    };
-    writeLocal(CHECKINS_KEY, history);
-    setText("#checkInStatus", "Saved privately on this device.");
-    renderHistory();
+  $("#saveCheckIn").addEventListener("click", saveCheckinToCloud);
+  $("#openSettings").addEventListener("click", () => {
+    setCycleDialogValues();
+    $("#settingsDialog").showModal();
   });
-
-  $("#miniPlanForm").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const plans = readLocal(PLANS_KEY, {});
-    plans[toISO(today())] = {
-      necessary: $("#necessaryTask").value.trim(),
-      easy: $("#easyTask").value.trim(),
-      care: $("#careTask").value.trim()
-    };
-    writeLocal(PLANS_KEY, plans);
-    setText("#planStatus", "Saved privately on this device.");
+  $("#editDates").addEventListener("click", () => {
+    setCycleDialogValues();
+    $("#settingsDialog").showModal();
   });
-
-  $("#openSettings").addEventListener("click", openSettings);
-  $("#editDates").addEventListener("click", openSettings);
   $("#closeSettings").addEventListener("click", () => $("#settingsDialog").close());
-  $("#settingsForm").addEventListener("submit", (event) => {
+  $("#settingsForm").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const lastPeriod = $("#lastPeriod").value;
-    const cycleLength = Number($("#cycleLength").value);
-    const periodLength = Number($("#periodLength").value);
-    if (!lastPeriod || parseDate(lastPeriod) > today() || periodLength > cycleLength) return;
-    state.settings = {
-      ...state.settings,
-      lastPeriod,
-      cycleLength,
-      periodLength,
-      wakeTime: $("#wakeTime").value,
-      hemisphere: $("#hemisphere").value
+    const updated = {
+      lastPeriod: $("#lastPeriod").value,
+      cycleLength: Number($("#cycleLength").value),
+      periodLength: Number($("#periodLength").value),
+      wakeTime: $("#wakeTime").value
     };
-    saveSettings();
-    $("#settingsDialog").close();
-    renderAll();
+    if (!updated.lastPeriod || parseDate(updated.lastPeriod) > today() ||
+        updated.cycleLength < 21 || updated.cycleLength > 45 ||
+        updated.periodLength < 2 || updated.periodLength > 10 ||
+        updated.periodLength > updated.cycleLength) return;
+    try {
+      state.settings = updated;
+      await saveSettingsToCloud();
+      $("#settingsDialog").close();
+      renderAll();
+    } catch (error) {
+      setText("#checkInStatus", friendlyFirebaseError(error));
+    }
+  });
+  $("#logPeriodToday").addEventListener("click", async () => {
+    try {
+      await logCurrentPeriod();
+    } catch (error) {
+      setText("#checkInStatus", friendlyFirebaseError(error));
+    }
   });
 
-  $("#clearData").addEventListener("click", () => {
-    if (!window.confirm("Clear all cycle dates, check-ins and plans from this browser?")) return;
-    localStorage.removeItem(SETTINGS_KEY);
-    localStorage.removeItem(CHECKINS_KEY);
-    localStorage.removeItem(PLANS_KEY);
-    state.settings = getDefaultSettings();
-    state.checkin = { energy: "steady", symptoms: [], priority: "lighter-plan" };
-    state.guidePhase = null;
-    setDialogValues();
-    renderAll();
+  $("#openProfile").addEventListener("click", () => {
+    $("#profileName").value = state.profileName;
+    $("#profileDialog").showModal();
   });
-
-  $("#openPeriodLog").addEventListener("click", () => {
-    $("#periodStartDate").value = toISO(today());
-    $("#periodStartDate").max = toISO(today());
-    $("#periodDialog").showModal();
-  });
-  $("#closePeriodLog").addEventListener("click", () => $("#periodDialog").close());
-  $("#periodLogForm").addEventListener("submit", (event) => {
+  $("#closeProfile").addEventListener("click", () => $("#profileDialog").close());
+  $("#profileForm").addEventListener("submit", (event) => {
     event.preventDefault();
-    const value = $("#periodStartDate").value;
-    if (!value || parseDate(value) > today()) return;
-    logPeriodStart(value);
-    $("#periodDialog").close();
+    saveProfileName();
+  });
+  $("#logoutButton").addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      $("#profileDialog").close();
+    } catch (error) {
+      setText("#checkInStatus", friendlyFirebaseError(error));
+    }
   });
 }
 
-function initialise() {
-  loadState();
-  initialiseListeners();
-  renderAll();
-  if (!localStorage.getItem(SETTINGS_KEY)) openSettings();
+function initialiseFirebaseApp() {
+  populateOnboarding();
+  initialiseFirebaseListeners();
+  onAuthStateChanged(auth, handleAuthState);
 }
 
-initialise();
+initialiseFirebaseApp();
