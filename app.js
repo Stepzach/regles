@@ -277,7 +277,6 @@ const state = {
   profileName: "",
   settings: null,
   checkin: { energy: "steady", symptoms: [], priority: "lighter-plan" },
-  guidePhase: null,
   checkins: [],
   checkinsReady: false,
   checkinTouched: false,
@@ -528,74 +527,6 @@ function renderCycle() {
   setText("#mapCycleDay", `${cycle.cycleDay} of ${cycle.cycleLength}`);
   setText("#mapCycleCopy", `You are in your estimated ${phase.name.toLowerCase()} phase. Log a new period when it starts to keep this estimate current.`);
 
-  if (!state.guidePhase) state.guidePhase = cycle.phaseId;
-  renderPhasePicker(cycle.phaseId);
-  renderGuide();
-}
-
-function renderPhasePicker(currentPhase) {
-  const picker = $("#phasePicker");
-  picker.replaceChildren();
-  PHASE_ORDER.forEach((id) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = PHASES[id].name;
-    button.classList.toggle("is-active", id === state.guidePhase);
-    button.setAttribute("aria-current", id === currentPhase ? "step" : "false");
-    button.addEventListener("click", () => {
-      state.guidePhase = id;
-      renderPhasePicker(currentPhase);
-      renderGuide();
-    });
-    picker.append(button);
-  });
-}
-
-function renderGuide() {
-  const phase = PHASES[state.guidePhase];
-  const content = $("#guideContent");
-  content.replaceChildren();
-
-  const intro = document.createElement("div");
-  intro.className = "guide-topline";
-  intro.innerHTML = `<div><h3>${phase.name}</h3><p>${phase.summary}</p></div><span class="guide-when">${phase.when}</span>`;
-  content.append(intro);
-
-  const grid = document.createElement("div");
-  grid.className = "guide-grid";
-  const food = document.createElement("section");
-  food.className = "guide-block";
-  food.innerHTML = `<h3>Food</h3><p>${phase.food.focus}</p>`;
-  const foodList = document.createElement("ul");
-  foodList.className = "plain-list";
-  phase.food.nutrients.forEach((item) => {
-    const line = document.createElement("li");
-    line.textContent = item;
-    foodList.append(line);
-  });
-  food.append(foodList);
-
-  const movement = document.createElement("section");
-  movement.className = "guide-block";
-  movement.innerHTML = `<h3>Movement</h3><p><strong>Running low:</strong> ${phase.movement.low}</p><p><strong>Steady:</strong> ${phase.movement.steady}</p><p><strong>Plenty:</strong> ${phase.movement.plenty}</p>`;
-
-  const sleep = document.createElement("section");
-  sleep.className = "guide-block";
-  sleep.innerHTML = `<h3>Sleep</h3><p><strong>${phase.sleep.title}.</strong> ${phase.sleep.copy}</p>`;
-
-  const plan = document.createElement("section");
-  plan.className = "guide-block";
-  plan.innerHTML = "<h3>Planning</h3>";
-  const planList = document.createElement("ul");
-  planList.className = "plain-list";
-  phase.plan.forEach((item) => {
-    const line = document.createElement("li");
-    line.textContent = item;
-    planList.append(line);
-  });
-  plan.append(planList);
-  grid.append(food, movement, sleep, plan);
-  content.append(grid);
 }
 
 function renderLog() {
@@ -902,7 +833,6 @@ async function logCurrentPeriod() {
   }
 
   state.settings = { ...state.settings, lastPeriod: dateValue, cycleLength };
-  state.guidePhase = "menstrual";
   await saveSettingsToCloud();
   $("#settingsDialog").close();
   setText("#checkInStatus", note);
