@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  // ===============================================================
+  // Assumed data model
+  // ===============================================================
+  // /users/{uid}
+  //   displayName: string, 1–80 characters
+  //   lastPeriod: YYYY-MM-DD string
+  //   cycleLength: integer, 21–45
+  //   periodLength: integer, 2–10 and no longer than cycleLength
+  //   wakeTime: HH:MM string
+  //   createdAt: immutable server timestamp
+  //   updatedAt: server timestamp
+  //
+  // /users/{uid}/checkins/{YYYY-MM-DD}
+  //   energy, symptoms, priority, phase: constrained check-in values
+  //   necessary, easy, care: optional answers, up to 120 characters each
+  //   createdAt: immutable server timestamp
+  //   savedAt: server timestamp
+  // ===============================================================
+
+  match /databases/{database}/documents {
+    // Shared helpers -------------------------------------------------
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasProfile(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function uidUnchanged(data) {
+      return !('uid' in data) || data.uid == request.auth.uid;
+    }
+
+    function uidNotModified(data) {
+      return !('uid' in data) || data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    function validDateKey(value) {
+      return value is string && value.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function validClock(value) {
+      return value is string && value.matches('^([0-1][0-9]|2[0-3]):[0-5][0-9]$');
+    }
+
+    function validText(value, maxLength) {
+      return value is string && value.size() <= maxLength;
+    }
+
+    function validSymptoms(value) {
+      return value is list && value.size() <= 6 &&
+        value.toSet().size() == value.size() &&
+        value.toSet().hasOnly(['cramps', 'bleeding', 'bloating', 'headache', 'tender', 'fine']);
+    }
+
+    // Validators -----------------------------------------------------
+    function validProfile(data) {
+      return hasRequiredFields(data, ['displayName', 'lastPeriod', 'cycleLength', 'periodLength', 'wakeTime', 'createdAt', 'updatedAt']) &&
+        hasOnlyAllowedFields(data, ['displayName', 'lastPeriod', 'cycleLength', 'periodLength', 'wakeTime', 'createdAt', 'updatedAt']) &&
+        validText(data.displayName, 80) && data.displayName.size() > 0 &&
+        validDateKey(data.lastPeriod) &&
+        data.cycleLength is int && data.cycleLength >= 21 && data.cycleLength <= 45 &&
+        data.periodLength is int && data.periodLength >= 2 && data.periodLength <= 10 && data.periodLength <= data.cycleLength &&
+        validClock(data.wakeTime);
+    }
+
+    function validCheckin(data, checkinId) {
+      return hasRequiredFields(data, ['energy', 'symptoms', 'priority', 'phase', 'necessary', 'easy', 'care', 'createdAt', 'savedAt']) &&
+        hasOnlyAllowedFields(data, ['energy', 'symptoms', 'priority', 'phase', 'necessary', 'easy', 'care', 'createdAt', 'savedAt']) &&
+        validDateKey(checkinId) &&
+        data.energy in ['low', 'steady', 'plenty'] &&
+        validSymptoms(data.symptoms) &&
+        data.priority in ['food', 'movement', 'lighter-plan', 'sleep', 'reset'] &&
+        data.phase in ['menstrual', 'follicular', 'ovulatory', 'luteal'] &&
+        validText(data.necessary, 120) && validText(data.easy, 120) && validText(data.care, 120);
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && uidUnchanged(request.resource.data) &&
+        validProfile(request.resource.data) &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(userId) && uidNotModified(request.resource.data) &&
+        validProfile(request.resource.data) &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      match /checkins/{checkinId} {
+        allow read: if isOwner(userId) && hasProfile(userId);
+        allow create: if isOwner(userId) && hasProfile(userId) && uidUnchanged(request.resource.data) &&
+          validCheckin(request.resource.data, checkinId) &&
+          request.resource.data.createdAt == request.time &&
+          request.resource.data.savedAt == request.time;
+        allow update: if isOwner(userId) && hasProfile(userId) && uidNotModified(request.resource.data) &&
+          validCheckin(request.resource.data, checkinId) &&
+          request.resource.data.createdAt == resource.data.createdAt &&
+          request.resource.data.savedAt == request.time;
+        allow delete: if false;
+      }
+    }
+  }
+}
