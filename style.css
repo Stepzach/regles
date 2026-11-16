@@ -211,7 +211,7 @@ main {
   height: 174px;
   border: 1px solid rgb(255 255 255 / 55%);
   border-radius: 50%;
-  content: "";
+ 
 }
 
 .phase-hero-copy,
@@ -227,7 +227,7 @@ main {
 
 .phase-hero .lead {
   max-width: 575px;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
   font-size: 1.2rem;
 }
 
@@ -243,7 +243,7 @@ main {
   display: flex;
   align-items: center;
   gap: 22px;
-  margin-top: 28px;
+  
 }
 
 .period-button {
@@ -641,8 +641,7 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--line);
+  
 }
 
 .guide-topline h3 {
@@ -661,6 +660,7 @@ main {
   color: var(--muted);
   font-size: 0.93rem;
   text-align: right;
+  display:none;
 }
 
 .guide-grid {
@@ -1004,7 +1004,7 @@ select:hover {
   }
 
   .phase-hero {
-    min-height: 305px;
+          min-height: 205px;
     margin-bottom: 46px;
     border-radius: 15px;
   }
