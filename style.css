@@ -190,9 +190,8 @@ main {
 .phase-hero {
   position: relative;
   display: flex;
-  min-height: 312px;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow: hidden;
   margin-bottom: 61px;
   padding: clamp(28px, 5.2vw, 60px);
@@ -435,6 +434,7 @@ main {
 }
 
 .meals-section {
+  padding-top: 28px;
   padding-bottom: 0;
   border-bottom: 0;
 }
@@ -1004,7 +1004,6 @@ select:hover {
   }
 
   .phase-hero {
-    min-height: 305px;
     margin-bottom: 46px;
     border-radius: 15px;
   }
@@ -1234,7 +1233,8 @@ select:hover {
 
 .greeting {
   margin: -7px 0 22px;
-  font-size: 1.1rem;
+  font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+  line-height: 1.08;
   letter-spacing: -0.02em;
 }
 
