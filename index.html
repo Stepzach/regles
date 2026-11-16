@@ -18,38 +18,154 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="site-shell">
+    <section class="boot-screen" id="bootScreen" aria-label="Loading Cycle Compass">
+      <p class="brand">Cycle Compass</p>
+    </section>
+
+    <section class="auth-screen" id="authScreen" aria-labelledby="authTitle" hidden>
+      <div class="auth-inner">
+        <p class="brand">Cycle Compass</p>
+        <h1 id="authTitle">A little more in step with you.</h1>
+        <p class="lead">A private place to notice your cycle, make a smaller plan, and keep what helps close.</p>
+
+        <form class="onboarding-form" id="onboardingForm">
+          <div class="form-grid onboarding-grid">
+            <label class="wide-field">
+              Your name
+              <input type="text" id="onboardingName" maxlength="80" autocomplete="name" required />
+            </label>
+            <label>
+              First day of your most recent period
+              <input type="date" id="onboardingLastPeriod" required />
+            </label>
+            <label>
+              Usual cycle length
+              <span class="input-with-unit"><input type="number" id="onboardingCycleLength" min="21" max="45" value="28" required /><span>days</span></span>
+            </label>
+            <label>
+              Usual period length
+              <span class="input-with-unit"><input type="number" id="onboardingPeriodLength" min="2" max="10" value="5" required /><span>days</span></span>
+            </label>
+            <label>
+              Usual wake-up time
+              <input type="time" id="onboardingWakeTime" value="07:30" required />
+            </label>
+          </div>
+          <p class="auth-note">Your log stays private to you. You can change these details at any time.</p>
+          <button class="primary-button google-button" type="submit" id="googleSignIn">
+            <span class="google-mark" aria-hidden="true">G</span>
+            Continue with Google
+          </button>
+          <p class="saved-note auth-status" id="authStatus" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <div class="site-shell" id="appShell" hidden>
       <header class="site-header">
         <a class="brand" href="#today" aria-label="Cycle Compass home">Cycle Compass</a>
         <nav class="tab-switcher" aria-label="Main navigation" role="tablist">
           <button class="tab-button is-active" id="today-tab" data-tab="today" role="tab" aria-selected="true" aria-controls="today">Today</button>
           <button class="tab-button" id="cycle-tab" data-tab="cycle" role="tab" aria-selected="false" aria-controls="cycle">Cycle</button>
-          <button class="tab-button" id="plan-tab" data-tab="plan" role="tab" aria-selected="false" aria-controls="plan">Plan</button>
+          <button class="tab-button" id="log-tab" data-tab="log" role="tab" aria-selected="false" aria-controls="log">Log</button>
         </nav>
-        <button class="plain-button settings-button" id="openSettings" type="button">Settings</button>
+        <div class="header-actions">
+          <button class="plain-button settings-button" id="openSettings" type="button">My cycle</button>
+          <button class="profile-button" id="openProfile" type="button" aria-label="Open profile"><span id="profileInitial">?</span></button>
+        </div>
       </header>
 
       <main>
         <section class="tab-panel is-visible" id="today" role="tabpanel" aria-labelledby="today-tab">
           <div class="date-line" id="todayDate"></div>
+          <p class="greeting" id="greeting"></p>
 
           <section class="phase-hero" id="phaseHero" aria-labelledby="phaseTitle">
             <div class="phase-hero-copy">
               <p class="phase-marker" id="cycleDay"></p>
               <h1 id="phaseTitle">Your day, in context.</h1>
               <p class="lead" id="phaseSummary"></p>
-             
             </div>
-           
           </section>
 
-          <section class="check-in section-block" aria-labelledby="checkInTitle">
+          <section class="today-grid" aria-label="Today's guidance">
+            <article class="advice-card" id="foodCard">
+              <h2>Eat</h2>
+              <p class="card-lead" id="foodFocus"></p>
+              <ul class="plain-list" id="foodNutrients"></ul>
+            </article>
+            <article class="advice-card" id="moveCard">
+              <h2>Move</h2>
+              <p class="card-lead" id="movementAdvice"></p>
+              <p class="small-note" id="movementNote"></p>
+            </article>
+            <article class="advice-card" id="planCard">
+              <h2>Plan</h2>
+              <p class="card-lead" id="planAdvice"></p>
+              <ul class="plain-list" id="phasePlan"></ul>
+              <button class="quiet-link inline-link" data-go="log" type="button">Open your log <span aria-hidden="true">→</span></button>
+            </article>
+            <article class="advice-card" id="sleepCard">
+              <h2>Sleep</h2>
+              <p class="card-lead" id="sleepTitle"></p>
+              <p id="sleepAdvice"></p>
+              <p class="small-note" id="sleepTiming"></p>
+            </article>
+          </section>
+
+          <section class="meals-section section-block" aria-labelledby="mealTitle">
+            <div class="section-heading row-heading">
+              <div>
+                <h2 id="mealTitle">Meals that fit today</h2>
+                <p id="seasonalMealLine"></p>
+              </div>
+              <button class="quiet-link" data-go="cycle" type="button">All phase meals <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="recipe-list" id="todayRecipes"></div>
+          </section>
+        </section>
+
+        <section class="tab-panel" id="cycle" role="tabpanel" aria-labelledby="cycle-tab" hidden>
+          <section class="page-intro">
+            <h1>Your cycle, in context.</h1>
+            <p class="lead">These are estimates from the dates you save here. They are not a fertility prediction or a rule for how you should feel.</p>
+          </section>
+
+          <section class="cycle-map section-block" aria-labelledby="cycleMapTitle">
+            <div class="section-heading row-heading">
+              <div>
+                <h2 id="cycleMapTitle">Day <span id="mapCycleDay"></span></h2>
+                <p id="mapCycleCopy"></p>
+              </div>
+              <button class="quiet-link" id="editDates" type="button">Edit cycle</button>
+            </div>
+            <div class="cycle-track-wrap" aria-label="Cycle phase timeline">
+              <div class="cycle-track" id="cycleTrack"></div>
+              <span class="cycle-now" id="cycleNow"><span class="visually-hidden">Today</span></span>
+            </div>
+            <div class="cycle-labels" id="cycleLabels"></div>
+          </section>
+
+          <section class="phase-guide section-block" aria-labelledby="guideTitle">
+            <div class="section-heading">
+              <div>
+                <h2 id="guideTitle">The full guide</h2>
+                <p>Pick a phase to see food, movement, sleep and planning ideas. Keep only what feels useful.</p>
+              </div>
+            </div>
+            <div class="phase-picker" id="phasePicker" aria-label="Cycle phases"></div>
+            <div id="guideContent"></div>
+          </section>
+        </section>
+
+        <section class="tab-panel" id="log" role="tabpanel" aria-labelledby="log-tab" hidden>
+          <section class="check-in section-block log-check-in" aria-labelledby="checkInTitle">
             <div class="section-heading">
               <div>
                 <h2 id="checkInTitle">How are you, really?</h2>
                 <p>Use your body and your day as the starting point. Your cycle is context, not a command.</p>
               </div>
-             
+              <p class="saved-note" id="checkInStatus" aria-live="polite"></p>
             </div>
 
             <div class="check-grid">
@@ -85,159 +201,55 @@
                 </div>
               </fieldset>
             </div>
+
+            <details class="mini-plan-details" id="miniPlanDetails">
+              <summary>Make today smaller <span>(optional)</span></summary>
+              <div class="mini-plan-fields">
+                <p>One necessary thing. One easy win. One thing that helps you feel more like yourself.</p>
+                <label>
+                  Necessary
+                  <input id="necessaryTask" maxlength="120" placeholder="The one thing that really needs doing" autocomplete="off" />
+                </label>
+                <label>
+                  Easy win
+                  <input id="easyTask" maxlength="120" placeholder="Something small you can finish" autocomplete="off" />
+                </label>
+                <label>
+                  For you
+                  <input id="careTask" maxlength="120" placeholder="Food, air, a call, a shower…" autocomplete="off" />
+                </label>
+              </div>
+            </details>
+
             <button class="primary-button" type="button" id="saveCheckIn">Save today’s check-in</button>
           </section>
 
-          <section class="today-grid" aria-label="Today's guidance">
-            <article class="advice-card" id="foodCard">
-              <h2>Eat</h2>
-              <p class="card-lead" id="foodFocus"></p>
-              <ul class="plain-list" id="foodNutrients"></ul>
-            </article>
-            <article class="advice-card" id="moveCard">
-              <h2>Move</h2>
-              <p class="card-lead" id="movementAdvice"></p>
-              <p class="small-note" id="movementNote"></p>
-            </article>
-            <article class="advice-card" id="planCard">
-              <h2>Plan</h2>
-              <p class="card-lead" id="planAdvice"></p>
-              <ul class="plain-list" id="phasePlan"></ul>
-              <button class="quiet-link inline-link" data-go="plan" type="button">Make a smaller plan <span aria-hidden="true">→</span></button>
-            </article>
-            <article class="advice-card" id="sleepCard">
-              <h2>Sleep</h2>
-              <p class="card-lead" id="sleepTitle"></p>
-              <p id="sleepAdvice"></p>
-              <p class="small-note" id="sleepTiming"></p>
-            </article>
-          </section>
-
-          <section class="meals-section section-block" aria-labelledby="mealTitle">
-            <div class="section-heading row-heading">
-              <div>
-                <h2 id="mealTitle">Meals that fit today</h2>
-                <p id="seasonalMealLine"></p>
-              </div>
-              <button class="quiet-link" data-go="cycle" type="button">All phase meals <span aria-hidden="true">→</span></button>
-            </div>
-            <div class="recipe-list" id="todayRecipes"></div>
-          </section>
-        </section>
-
-        <section class="tab-panel" id="cycle" role="tabpanel" aria-labelledby="cycle-tab" hidden>
-          <section class="page-intro">
-            <h1>Your cycle, in context.</h1>
-            <p class="lead">These are estimates from the dates you save here. They are not a fertility prediction or a rule for how you should feel.</p>
-          </section>
-
-          <section class="cycle-map section-block" aria-labelledby="cycleMapTitle">
-            <div class="section-heading row-heading">
-              <div>
-                <h2 id="cycleMapTitle">Day <span id="mapCycleDay"></span></h2>
-                <p id="mapCycleCopy"></p>
-              </div>
-              <button class="quiet-link" id="editDates" type="button">Edit dates</button>
-            </div>
-            <div class="cycle-track-wrap" aria-label="Cycle phase timeline">
-              <div class="cycle-track" id="cycleTrack"></div>
-              <span class="cycle-now" id="cycleNow"><span class="visually-hidden">Today</span></span>
-            </div>
-            <div class="cycle-labels" id="cycleLabels"></div>
-          </section>
-
-          <section class="phase-guide section-block" aria-labelledby="guideTitle">
+          <section class="log-history section-block" aria-labelledby="historyTitle">
             <div class="section-heading">
               <div>
-                <h2 id="guideTitle">The full guide</h2>
-                <p>Pick a phase to see food, movement, sleep and planning ideas. Keep only what feels useful.</p>
+                <h2 id="historyTitle">Recent logs</h2>
               </div>
             </div>
-            <div class="phase-picker" id="phasePicker" aria-label="Cycle phases"></div>
-            <div id="guideContent"></div>
+            <div class="history-list" id="historyList"></div>
           </section>
-        </section>
-
-        <section class="tab-panel" id="plan" role="tabpanel" aria-labelledby="plan-tab" hidden>
-          <section class="page-intro">
-            <h1>Give your day more room.</h1>
-            <p class="lead">A small plan is still a plan. Start with the next useful thing, then leave space for yourself.</p>
-          </section>
-
-          <section class="season-card section-block" id="seasonCard" aria-labelledby="seasonTitle">
-            <div>
-              <h2 id="seasonTitle"></h2>
-              <p class="card-lead" id="seasonLine"></p>
-            </div>
-            <ul class="plain-list" id="seasonSwaps"></ul>
-          </section>
-
-          <section class="mini-plan section-block" aria-labelledby="miniPlanTitle">
-            <div class="section-heading">
-              <div>
-                <h2 id="miniPlanTitle">Make today smaller</h2>
-                <p>One necessary thing. One easy thing. One thing that helps you feel more like yourself.</p>
-              </div>
-              <p class="saved-note" id="planStatus" aria-live="polite"></p>
-            </div>
-            <form id="miniPlanForm" class="mini-plan-form">
-              <label>
-                Necessary
-                <input id="necessaryTask" name="necessary" maxlength="120" placeholder="The one thing that really needs doing" autocomplete="off" />
-              </label>
-              <label>
-                Easy win
-                <input id="easyTask" name="easy" maxlength="120" placeholder="Something small you can finish" autocomplete="off" />
-              </label>
-              <label>
-                For you
-                <input id="careTask" name="care" maxlength="120" placeholder="Food, air, a call, a shower…" autocomplete="off" />
-              </label>
-              <button class="primary-button" type="submit">Save today’s plan</button>
-            </form>
-          </section>
-
-          <div class="plan-columns">
-            <section class="reset-card section-block" aria-labelledby="resetTitle">
-              <h2 id="resetTitle">Two-minute reset</h2>
-              <ol class="reset-steps" id="resetSteps"></ol>
-            </section>
-            <section class="history-card section-block" aria-labelledby="historyTitle">
-              <h2 id="historyTitle">Recent check-ins</h2>
-              <div class="history-list" id="historyList"></div>
-            </section>
-          </div>
-
-          <details class="care-note">
-            <summary>When this needs more than an app</summary>
-            <div>
-              <p>This is wellbeing guidance, not medical care. Speak to a clinician if symptoms affect daily life, your cycle changes suddenly, you have bleeding between periods, or you may be pregnant.</p>
-              <p>Seek urgent medical help for severe or sudden pain, very heavy bleeding with dizziness or fainting, or possible pregnancy with pain or bleeding.</p>
-              <p>Hormonal contraception, pregnancy, postpartum recovery, perimenopause and conditions such as PCOS or endometriosis can make phase estimates less useful. Use this primarily as a symptom journal unless a clinician has advised otherwise.</p>
-            </div>
-          </details>
         </section>
       </main>
 
-      <footer class="site-footer">
-        <p>Private by default. Your dates, check-ins and plans stay in this browser.</p>
-        <p>Cycle estimates are not medical or fertility advice.</p>
-      </footer>
     </div>
 
     <dialog class="settings-dialog" id="settingsDialog" aria-labelledby="settingsTitle">
       <form id="settingsForm" method="dialog">
         <div class="dialog-header">
           <div>
-            <h2 id="settingsTitle">Set up your cycle</h2>
-            <p>Everything is stored only in this browser.</p>
+            <h2 id="settingsTitle">Edit your cycle</h2>
+            <p>Keep your estimate close to real life.</p>
           </div>
           <button class="close-button" type="button" id="closeSettings" aria-label="Close settings">×</button>
         </div>
 
         <div class="form-grid">
           <label>
-            First day of your last period
+            First day of your most recent period
             <input type="date" id="lastPeriod" name="lastPeriod" required />
           </label>
           <label>
@@ -252,41 +264,40 @@
             Usual wake-up time
             <input type="time" id="wakeTime" name="wakeTime" value="07:30" required />
           </label>
-          <label>
-            Seasonal setting
-            <select id="hemisphere" name="hemisphere">
-              <option value="north">Northern hemisphere</option>
-              <option value="south">Southern hemisphere</option>
-            </select>
-          </label>
         </div>
 
-        <p class="dialog-note">Stardust does not currently offer a public connection for third-party apps, so this works independently and keeps your information local.</p>
-        <button class="primary-button" type="submit">Save and continue</button>
-        <button class="plain-button reset-data-button" type="button" id="clearData">Clear all local data</button>
+        <div class="dialog-actions">
+          <button class="primary-button" type="submit">Save changes</button>
+          <button class="plain-button period-start-button" type="button" id="logPeriodToday">My period started today</button>
+        </div>
       </form>
     </dialog>
 
-    <dialog class="settings-dialog period-dialog" id="periodDialog" aria-labelledby="periodDialogTitle">
-      <form id="periodLogForm" method="dialog">
+    <dialog class="settings-dialog profile-dialog" id="profileDialog" aria-labelledby="profileDialogTitle">
+      <form id="profileForm" method="dialog">
         <div class="dialog-header">
           <div>
-            <h2 id="periodDialogTitle">Log a period</h2>
-            <p>This makes the selected day day 1 of your cycle.</p>
+            <h2 id="profileDialogTitle">Your profile</h2>
+            <p>Just the details that make this feel like yours.</p>
           </div>
-          <button class="close-button" type="button" id="closePeriodLog" aria-label="Close log period">×</button>
+          <button class="close-button" type="button" id="closeProfile" aria-label="Close profile">×</button>
         </div>
-        <label class="period-date-field">
-          Start date
-          <input type="date" id="periodStartDate" name="periodStartDate" required />
+        <label class="profile-name-field">
+          Your name
+          <input type="text" id="profileName" maxlength="80" autocomplete="name" required />
         </label>
-        <p class="dialog-note">If the last cycle ended at a different length, Cycle Compass will use that real length for the next estimate. You can always edit it in Settings.</p>
-        <button class="primary-button" type="submit">Save as day 1</button>
+        <div class="dialog-actions">
+          <button class="primary-button" type="submit">Save name</button>
+          <button class="plain-button logout-button" type="button" id="logoutButton">Log out</button>
+        </div>
       </form>
     </dialog>
 
     <template id="recipeTemplate">
       <article class="recipe-card">
+        <div class="recipe-image-wrap">
+          <img class="recipe-image" src="" alt="" loading="lazy" />
+        </div>
         <button class="recipe-summary" type="button" aria-expanded="false">
           <span class="recipe-name"></span>
           <span class="recipe-tags"></span>
@@ -299,6 +310,6 @@
       </article>
     </template>
 
-    <script src="./app.js"></script>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
